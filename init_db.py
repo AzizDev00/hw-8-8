@@ -12,11 +12,11 @@ def init_db():
         admin_user = schemas.UserCreate(
             username="admin",
             email="admin@example.com",
-            password="admin123"
+            password="admin123",
+            is_staff=True
         )
-        crud.create_user(db, user=admin_user)
+        user = crud.create_user(db, user=admin_user)
+        user.is_staff = True
+        db.commit()
         print("Created initial admin user with username 'admin' and password 'admin123'")
     db.close()
-
-if __name__ == "__main__":
-    init_db()

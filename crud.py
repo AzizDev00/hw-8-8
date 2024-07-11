@@ -1,10 +1,10 @@
+import logging
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 import models, schemas, utils
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional
-import logging
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -22,18 +22,21 @@ def get_user_by_email(db: Session, email: str):
         logging.error(f"Error getting user by email: {e}")
         return None
 
-def create_user(db: Session, user: schemas.UserCreate):
+def create_user(db: Session, user: schemas.UserCreate) -> Optional[models.User]:
     hashed_password = utils.get_password_hash(user.password)
-    db_user = models.User(username=user.username, email=user.email, hashed_password=hashed_password)
+    db_user = models.User(username=user.username, email=user.email, hashed_password=hashed_password, is_staff=user.is_staff)
     try:
+        logging.info(f"Attempting to create user: {user.username}")
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
+        logging.info(f"User created successfully: {db_user.username}")
+        return db_user
     except Exception as e:
         logging.error(f"Error creating user: {e}")
         db.rollback()
         return None
-    return db_user
+
 
 def authenticate_user(db: Session, username: str, password: str):
     user = get_user_by_username(db, username=username)
@@ -94,17 +97,17 @@ def get_product(db: Session, product_id: int):
 def get_products(db: Session, skip: int = 0, limit: int = 10):
     return db.query(models.Product).offset(skip).limit(limit).all()
 
-def create_order(db: Session, order: schemas.OrderCreate):
+def create_order(db: Session, order: schemas.OrderCreate) -> models.Order:
     db_order = models.Order(**order.dict())
     try:
         db.add(db_order)
         db.commit()
         db.refresh(db_order)
+        return db_order
     except Exception as e:
         logging.error(f"Error creating order: {e}")
         db.rollback()
         return None
-    return db_order
 
 def get_order(db: Session, order_id: int):
     return db.query(models.Order).filter(models.Order.id == order_id).first()

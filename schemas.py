@@ -12,22 +12,21 @@ class UserBase(BaseModel):
     username: str
     email: EmailStr
 
-    class Config:
-        from_attributes = True
-
 class UserCreate(UserBase):
     password: str
-
-class UserLogin(BaseModel):
-    username: str
-    password: str
+    is_staff: bool = False
 
 class User(UserBase):
     id: int
     is_active: bool
+    is_staff: bool
 
     class Config:
         from_attributes = True
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
 
 class PasswordResetRequest(BaseModel):
     email: EmailStr
@@ -66,4 +65,4 @@ class Order(OrderBase):
     product: Product
 
     class Config:
-        from_attributes = True
+        orm_mode = True

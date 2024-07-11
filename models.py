@@ -9,6 +9,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
+    is_staff = Column(Boolean, default=False)
     reset_token = Column(String, nullable=True, index=True)
     orders = relationship("Order", back_populates="user")
 
